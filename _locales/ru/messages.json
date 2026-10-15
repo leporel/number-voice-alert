@@ -1,0 +1,21 @@
+{
+  "extName": {
+    "message": "Number Voice Alert",
+    "description": "Extension name in the store and the browser"
+  },
+  "extShortName": {
+    "message": "Number Alert"
+  },
+  "extDescription": {
+    "message": "Следит за любым числом на странице и сообщает о его изменениях голосом и в Telegram."
+  },
+  "cmdToggleMute": {
+    "message": "Включить / выключить звук (Telegram продолжит работать)"
+  },
+  "cmdTogglePause": {
+    "message": "Включить / выключить расширение (слежение, голос и Telegram)"
+  },
+  "cmdSpeakNow": {
+    "message": "Озвучить текущие значения"
+  }
+}

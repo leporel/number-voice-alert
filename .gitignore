@@ -1,0 +1,17 @@
+# OS / editors
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+
+# Local notes and packaged builds
+.prompts/
+dist/
+*.zip
+*.crx
+*.pem
+
+# Secrets
+.env
+.env.*

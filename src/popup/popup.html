@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Number Voice Alert</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">V</span>
+      <span>Number Voice Alert</span>
+    </div>
+    <div class="top-actions">
+      <button id="mute" class="toggle" data-i18n-title="muteTitle"></button>
+      <button id="power" class="toggle" data-i18n-title="powerTitle"></button>
+    </div>
+  </header>
+
+  <main>
+    <button id="pick" class="primary" data-i18n-title="pickTitle">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2"/></svg>
+      <span data-i18n="pick"></span>
+    </button>
+    <p id="notice" class="notice" hidden></p>
+
+    <section id="list" class="list"></section>
+    <p id="last-phrase" class="last-phrase" hidden></p>
+    <p id="empty" class="empty" hidden>
+      <span data-i18n="emptyLine1"></span><br>
+      <span data-i18n="emptyLine2"></span>
+    </p>
+
+    <details class="settings">
+      <summary data-i18n="settingsSummary"></summary>
+      <div class="grid">
+        <label class="full" data-i18n-title="uiLangTitle"><span data-i18n="uiLang"></span>
+          <select data-field="uiLang">
+            <option value="" data-i18n="uiLangAuto"></option>
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+          </select>
+        </label>
+        <label class="full" data-i18n-title="voiceTitle"><span data-i18n="voice"></span>
+          <select data-field="voiceName" id="voice"><option value="" id="voice-auto"></option></select>
+        </label>
+        <p id="no-voices" class="warn full" hidden></p>
+        <label data-i18n-title="rateTitle"><span data-i18n="rate"></span> <output data-out="rate"></output>
+          <input type="range" data-field="rate" min="0.5" max="3" step="0.1">
+        </label>
+        <label data-i18n-title="volumeTitle"><span data-i18n="volume"></span> <output data-out="volume"></output>
+          <input type="range" data-field="volume" min="0" max="1" step="0.05">
+        </label>
+        <label data-i18n-title="pitchTitle"><span data-i18n="pitch"></span> <output data-out="pitch"></output>
+          <input type="range" data-field="pitch" min="0.5" max="2" step="0.1">
+        </label>
+        <label data-i18n-title="cooldownTitle"><span data-i18n="cooldown"></span>
+          <input type="number" data-field="cooldownSec" min="0" max="600">
+        </label>
+        <label class="full" data-i18n-title="templateTitle"><span data-i18n="template"></span>
+          <input type="text" data-field="template" maxlength="120">
+          <small><code>{name}</code> <span data-i18n="tplName"></span> · <code>{value}</code> <span data-i18n="tplValue"></span> · <code>{dir}</code> <span data-i18n="tplDir"></span> · <code>{delta}</code> <span data-i18n="tplDelta"></span></small>
+        </label>
+        <label class="full" data-i18n-title="heartbeatTitle"><span data-i18n="heartbeat"></span>
+          <input type="number" data-field="heartbeatMin" min="0" max="240" step="0.5">
+        </label>
+        <label class="check full" data-i18n-title="speakFractionTitle"><input type="checkbox" data-field="speakFraction"> <span data-i18n="speakFraction"></span></label>
+        <label class="check full" data-i18n-title="announceOnStartTitle"><input type="checkbox" data-field="announceOnStart"> <span data-i18n="announceOnStart"></span></label>
+        <label class="check full" data-i18n-title="lostAlertTitle"><input type="checkbox" data-field="lostAlert"> <span data-i18n="lostAlert"></span></label>
+        <label class="check full" data-i18n-title="highlightTitle"><input type="checkbox" data-field="highlight"> <span data-i18n="highlight"></span></label>
+        <button id="test-voice" class="secondary full" data-i18n="testVoice" data-i18n-title="testVoiceTitle"></button>
+
+        <p class="section full">Telegram</p>
+        <label class="full" data-i18n-title="tgTokenTitle"><span data-i18n="tgToken"></span>
+          <input type="password" data-field="tgToken" maxlength="100" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="full" data-i18n-title="tgChatIdTitle">chat_id
+          <input type="text" data-field="tgChatId" maxlength="64" autocomplete="off" spellcheck="false">
+        </label>
+        <small class="full" data-i18n="tgHint"></small>
+        <button id="tg-find-chat" class="secondary" data-i18n="tgFind" data-i18n-title="tgFindTitle"></button>
+        <button id="tg-test" class="secondary" data-i18n="tgTest" data-i18n-title="tgTestTitle"></button>
+        <p id="tg-status" class="warn full" hidden></p>
+      </div>
+    </details>
+  </main>
+
+  <footer>
+    <a href="#" id="shortcuts" data-i18n="shortcuts" data-i18n-title="shortcutsTitle"></a>
+    <span id="shortcut-list"></span>
+  </footer>
+
+  <template id="watcher-tpl">
+    <article class="card">
+      <div class="card-head">
+        <label class="switch" data-i18n-title="enabledTitle"><input type="checkbox" data-field="enabled"><span></span></label>
+        <input class="name" data-field="name" maxlength="40" data-i18n-placeholder="namePlaceholder" data-i18n-title="nameTitle">
+        <div class="value">
+          <span class="num">—</span>
+          <span class="meta"></span>
+        </div>
+      </div>
+      <details class="card-settings">
+        <summary>
+          <span class="step-summary"></span>
+          <span class="card-actions">
+            <button type="button" class="icon-btn" data-action="speak" data-i18n-title="speakTitle">
+              <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" data-action="reconnect" data-i18n-title="reconnectTitle" hidden>
+              <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="icon-btn" data-action="repick" data-i18n-title="repickTitle">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2"/></svg>
+            </button>
+            <button type="button" class="icon-btn danger" data-action="delete" data-i18n-title="deleteTitle">
+              <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </span>
+        </summary>
+        <div class="grid">
+          <label class="check full" data-i18n-title="speakNameTitle"><input type="checkbox" data-field="speakName"> <span data-i18n="speakName"></span></label>
+          <label class="check full" data-i18n-title="stepEnabledTitle"><input type="checkbox" data-field="stepEnabled"> <span data-i18n="stepEnabled"></span></label>
+          <label class="check full" data-i18n-title="tgStepTitle"><input type="checkbox" data-field="tgStep"> <span data-i18n="tgSend"></span></label>
+          <label data-i18n-title="stepTitle"><span data-i18n="step"></span>
+            <span class="inline">
+              <input type="number" data-field="step" min="0" step="any">
+              <select data-field="stepUnit">
+                <option value="abs" data-i18n="unitPt"></option>
+                <option value="pct">%</option>
+              </select>
+            </span>
+          </label>
+          <label data-i18n-title="decimalsTitle"><span data-i18n="decimals"></span>
+            <select data-field="decimals">
+              <option value="-1" data-i18n="decimalsAuto"></option>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </label>
+          <label data-i18n-title="skipDigitsTitle"><span data-i18n="skipDigits"></span>
+            <input type="number" data-field="skipDigits" min="0" max="9" step="1">
+          </label>
+          <small class="full" data-i18n="skipDigitsHint"></small>
+          <label class="check full" data-i18n-title="trackFractionTitle"><input type="checkbox" data-field="trackFraction"> <span data-i18n="trackFraction"></span></label>
+          <label class="check full" data-i18n-title="snapToGridTitle"><input type="checkbox" data-field="snapToGrid"> <span data-i18n="snapToGrid"></span></label>
+
+          <p class="section full" data-i18n="moveSection"></p>
+          <label class="check full" data-i18n-title="moveEnabledTitle"><input type="checkbox" data-field="moveEnabled"> <span data-i18n="moveEnabled"></span></label>
+          <label class="check full" data-i18n-title="tgMoveTitle"><input type="checkbox" data-field="tgMove"> <span data-i18n="tgSend"></span></label>
+          <label data-i18n-title="moveSizeTitle"><span data-i18n="moveSize"></span>
+            <span class="inline">
+              <input type="number" data-field="moveSize" min="0" step="any">
+              <select data-field="moveUnit">
+                <option value="pct">%</option>
+                <option value="abs" data-i18n="unitPt"></option>
+              </select>
+            </span>
+          </label>
+          <label data-i18n-title="moveWindowTitle"><span data-i18n="moveWindow"></span>
+            <span class="inline">
+              <input type="number" data-field="moveWindow" min="1" max="1440" step="1">
+              <select data-field="moveWindowUnit">
+                <option value="s" data-i18n="unit_s"></option>
+                <option value="m" data-i18n="unit_m"></option>
+                <option value="h" data-i18n="unit_h"></option>
+              </select>
+            </span>
+          </label>
+          <small class="full" data-i18n="moveHint"></small>
+          <label class="full" data-i18n-title="selectorTitle"><span data-i18n="selector"></span> <small class="host"></small>
+            <textarea data-field="selector" rows="2" spellcheck="false"></textarea>
+          </label>
+        </div>
+      </details>
+    </article>
+  </template>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/common.js"></script>
+  <script src="../shared/speech.js"></script>
+  <script src="../shared/telegram.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
