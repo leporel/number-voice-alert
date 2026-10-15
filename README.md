@@ -1,3 +1,9 @@
+<span align="center">
+
+[![Chrome Version](https://img.shields.io/chrome-web-store/v/gceacollgfcmblmdjchkmkmcbbifbcod?label=Chrome)](https://chromewebstore.google.com/detail/gceacollgfcmblmdjchkmkmcbbifbcod)
+
+</span>
+
 <img src="icons/icon-128.png" width="64" height="64" alt="Number Voice Alert icon">
 
 # Number Voice Alert
